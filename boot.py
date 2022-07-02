@@ -25,8 +25,15 @@ def blinkled(led):
     
 
 def flashlight():
+    targets = []
+    targetpos = 0
+    for x in range(randint(2, 6)):
+        targets.append(randint(0, length))
     for x in range(length):
-        blinkled(randint(0, length))
+        blinkled(targetpos[0])
+        targetpos = targetpos + 1
+    targets = 0
+    targetpos = 0
 
 while 1 == 1:
     flashlight()
