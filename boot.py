@@ -2,8 +2,11 @@ import machine, neopixel
 import time
 import urandom
 bright = 0
-length = 8
-np = neopixel.NeoPixel(machine.Pin(4), length + 1)
+length = 49
+targets = []
+targetpos = 0
+np = neopixel.NeoPixel(machine.Pin(4), 50)
+tsize = 0
 
 def randint(min, max):
     span = max - min + 1
@@ -25,8 +28,20 @@ def blinkled(led):
     
 
 def flashlight():
-    for x in range(length):
-        blinkled(randint(0, length))
+    global targets
+    global targetpos
+    targets = []
+    targetpos = 0
+    tsize = []
+    for x in range(randint(2, 6)):
+        targets.append(randint(0, length))
+    for x in targets:
+        blinkled(targets[targetpos])
+        targetpos = targetpos + 1
+        print(str(targetpos), targets)
+    targets = []
+    targetpos = 0
+    tsize = []
 
 while 1 == 1:
     flashlight()
