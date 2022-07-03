@@ -15,36 +15,43 @@ blinkyBugStatus = {
     'nextActionType': 0, # 0 = normal, 1 = snappy
     'currentAction': 0,
     'actionTickstate': 20, # "count down" for the current action
-    'pulseStreachTicks': 0 # add some variance for the 0.2 - 0.3ish range
+    'pulseStreachTicks': 0, # add some variance for the 0.2 - 0.3ish range
+    'wavlengthSkew': 0 # Is this a species with red wavlength chemestry
     }
  
 BLINKY_BUGS = []
 
 animations = [[10,20,25,50,75,120,120,150,200,255,255,200,150,100,50,40,30,20,10,0],
-              [10,25,75,120,255,200,100,50,0,0,10,25,75,120,255,200,100,50,0,0]]
+              [10,10,20,20,25,25,50,50,75,75,120,120,150,150,200,200,255,255,150,100,50,40,30,20,10,0],
+              [10,20,25,50,75,120,120,150,200,255,255,200,150,100,50,40,30,20,10,0,10,20,25,50,75,120,120,150,200,255,255,200,150,100,50,40,30,20,10,0]]
 
 def init_bugs():
     for i in range(length):
         BLINKY_BUGS.append(copy.copy(blinkyBugStatus))
-        BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(200,2000)
+        BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(100,1000)
         BLINKY_BUGS[i]['currentAction'] = BLINKY_BUGS[i]['nextActionType']
-        BLINKY_BUGS[i]['nextActionType'] = randint(0,1)
+        BLINKY_BUGS[i]['nextActionType'] = randint(0,len(animations)-1)
+        BLINKY_BUGS[i]['wavlengthSkew'] = randint(0,1)
         BLINKY_BUGS[i]['actionTickstate'] = 20
 
 
 def do_tick():
     for i in range(length):
         if (BLINKY_BUGS[i]['ticksUntilAction'] == 0): # reset ticks until next,
-            BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(200,2000)
+            BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(100,1000)
             BLINKY_BUGS[i]['currentAction'] = BLINKY_BUGS[i]['nextActionType']
-            BLINKY_BUGS[i]['nextActionType'] = randint(0,1)
+            BLINKY_BUGS[i]['nextActionType'] = randint(0,len(animations)-1)
+            BLINKY_BUGS[i]['wavlengthSkew'] = randint(0,1)
             BLINKY_BUGS[i]['actionTickstate'] = 0
         else:
             BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['ticksUntilAction'] - 1
-            if (BLINKY_BUGS[i]['actionTickstate'] < 20):
+            if (BLINKY_BUGS[i]['actionTickstate'] < len(animations[BLINKY_BUGS[i]['currentAction']])):
                 intensity = animations[BLINKY_BUGS[i]['currentAction']][BLINKY_BUGS[i]['actionTickstate']]
                 BLINKY_BUGS[i]['actionTickstate'] = BLINKY_BUGS[i]['actionTickstate'] + 1
-                np[i] = (intensity, intensity, 0)
+                #if (BLINKY_BUGS[i]['wavlengthSkew'] == 0):
+                np[i] = (int(intensity - (intensity * 0.12549)), intensity, 0)
+                #else:
+                #    np[i] = (intensity, intensity, 0)
     np.write()
 
 
