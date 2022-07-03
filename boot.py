@@ -1,12 +1,52 @@
 import machine, neopixel
 import time
 import urandom
-bright = 0
-length = 49
-targets = []
-targetpos = 0
-np = neopixel.NeoPixel(machine.Pin(4), 50)
-tsize = 0
+import copy
+
+length = 100
+np = neopixel.NeoPixel(machine.Pin(4), length + 1)
+
+#Most firefly flashes are 0.2-0.3 sec long; however, it takes sophisticated equipment
+#to measure such short intervals. So in practice I will use comparative descriptions.
+#A “normal flash” is 0.2-0.3 sec long. A “snappy flash” is a faster/shorter than normal flash.
+
+blinkyBugStatus = {
+    'ticksUntilAction': 0,
+    'nextActionType': 0, # 0 = normal, 1 = snappy
+    'currentAction': 0,
+    'actionTickstate': 20, # "count down" for the current action
+    'pulseStreachTicks': 0 # add some variance for the 0.2 - 0.3ish range
+    }
+ 
+BLINKY_BUGS = []
+
+animations = [[10,20,25,50,75,120,120,150,200,255,255,200,150,100,50,40,30,20,10,0],
+              [10,25,75,120,255,200,100,50,0,0,10,25,75,120,255,200,100,50,0,0]]
+
+def init_bugs():
+    for i in range(length):
+        BLINKY_BUGS.append(copy.copy(blinkyBugStatus))
+        BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(200,2000)
+        BLINKY_BUGS[i]['currentAction'] = BLINKY_BUGS[i]['nextActionType']
+        BLINKY_BUGS[i]['nextActionType'] = randint(0,1)
+        BLINKY_BUGS[i]['actionTickstate'] = 20
+
+
+def do_tick():
+    for i in range(length):
+        if (BLINKY_BUGS[i]['ticksUntilAction'] == 0): # reset ticks until next,
+            BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(200,2000)
+            BLINKY_BUGS[i]['currentAction'] = BLINKY_BUGS[i]['nextActionType']
+            BLINKY_BUGS[i]['nextActionType'] = randint(0,1)
+            BLINKY_BUGS[i]['actionTickstate'] = 0
+        else:
+            BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['ticksUntilAction'] - 1
+            if (BLINKY_BUGS[i]['actionTickstate'] < 20):
+                intensity = animations[BLINKY_BUGS[i]['currentAction']][BLINKY_BUGS[i]['actionTickstate']]
+                BLINKY_BUGS[i]['actionTickstate'] = BLINKY_BUGS[i]['actionTickstate'] + 1
+                np[i] = (intensity, intensity, 0)
+    np.write()
+
 
 def randint(min, max):
     span = max - min + 1
@@ -14,34 +54,8 @@ def randint(min, max):
     offset = urandom.getrandbits(30) // div
     val = min + offset
     return val
-
-def blinkled(led):
-    global bright
-    time = range(255)
-    bright = 255
-    for x in time:
-        np[led] = (bright, bright, 0)
-        np.write()
-        bright = bright - 1
-    np[led] = (0, 0, 0)
-    np.write()
-    
-
-def flashlight():
-    global targets
-    global targetpos
-    targets = []
-    targetpos = 0
-    tsize = []
-    for x in range(randint(2, 6)):
-        targets.append(randint(0, length))
-    for x in targets:
-        blinkled(targets[targetpos])
-        targetpos = targetpos + 1
-        print(str(targetpos), targets)
-    targets = []
-    targetpos = 0
-    tsize = []
+        
+init_bugs()
 
 while 1 == 1:
-    flashlight()
+    do_tick()
