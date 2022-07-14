@@ -25,10 +25,13 @@ animations = [[10,20,25,50,75,120,120,150,200,255,255,200,150,100,50,40,30,20,10
               [10,10,20,20,25,25,50,50,75,75,120,120,150,150,200,200,255,255,150,100,50,40,30,20,10,0],
               [10,20,25,50,75,120,120,150,200,255,255,200,150,100,50,40,30,20,10,0,10,20,25,50,75,120,120,150,200,255,255,200,150,100,50,40,30,20,10,0]]
 
+FirstSeven = 1400
+bumpDown = .001
+
 def init_bugs():
     for i in range(length):
         BLINKY_BUGS.append(copy.copy(blinkyBugStatus))
-        BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(100,1000)
+        BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(100,8000)
         BLINKY_BUGS[i]['currentAction'] = BLINKY_BUGS[i]['nextActionType']
         BLINKY_BUGS[i]['nextActionType'] = randint(0,len(animations)-1)
         BLINKY_BUGS[i]['wavlengthSkew'] = randint(0,1)
@@ -36,9 +39,17 @@ def init_bugs():
 
 
 def do_tick():
+    global FirstSeven
+    global bumpDown
+    if (FirstSeven > 0):
+        bumpDown = ((1400 - FirstSeven) / 3000)
+        print(bumpDown)
+        FirstSeven = FirstSeven - 1
+    else:
+        bumpDown = 1
     for i in range(length):
         if (BLINKY_BUGS[i]['ticksUntilAction'] == 0): # reset ticks until next,
-            BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(100,1000)
+            BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['actionTickstate'] + randint(200,2000)
             BLINKY_BUGS[i]['currentAction'] = BLINKY_BUGS[i]['nextActionType']
             BLINKY_BUGS[i]['nextActionType'] = randint(0,len(animations)-1)
             BLINKY_BUGS[i]['wavlengthSkew'] = randint(0,1)
@@ -47,6 +58,7 @@ def do_tick():
             BLINKY_BUGS[i]['ticksUntilAction'] = BLINKY_BUGS[i]['ticksUntilAction'] - 1
             if (BLINKY_BUGS[i]['actionTickstate'] < len(animations[BLINKY_BUGS[i]['currentAction']])):
                 intensity = animations[BLINKY_BUGS[i]['currentAction']][BLINKY_BUGS[i]['actionTickstate']]
+                intensity = int(intensity * bumpDown)
                 BLINKY_BUGS[i]['actionTickstate'] = BLINKY_BUGS[i]['actionTickstate'] + 1
                 #if (BLINKY_BUGS[i]['wavlengthSkew'] == 0):
                 np[i] = (int(intensity - (intensity * 0.12549)), intensity, 0)
